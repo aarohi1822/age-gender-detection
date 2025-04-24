@@ -62,10 +62,10 @@ Timestamp, Predicted_Age, Gender
 ## ⚙️ How to Run the Project
 
 1. Install dependencies:
-pip install -r requirements.txt
+ `pip install -r requirements.txt `
 
 2. Run the main script:
-python detect_age_gender.py
+ `python detect_age_gender.py `
 
 3. Check the `predictions.csv` file for results.
 

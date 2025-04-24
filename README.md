@@ -36,4 +36,3 @@ Designed for **installation in CCTV systems** across:
 ```csv
 Timestamp, Predicted_Age, Gender
 2025-04-23 14:03:10, 16, Male
-

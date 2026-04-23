@@ -1,110 +1,52 @@
 import streamlit as st
-import cv2
+import mediapipe as mp
 import numpy as np
-import os
-from PIL import Image
+from PIL import Image, ImageDraw
 
-st.title("Age & Gender Detection")
+st.title("Facial Gesture Recognition")
 
-# === Paths ===
-base_path = os.path.dirname(__file__)
-model_path = os.path.join(base_path, "models")
+mp_face_mesh = mp.solutions.face_mesh
 
-# === Load Models ===
 @st.cache_resource
-def load_models():
-    face_net = cv2.dnn.readNet(
-        os.path.join(model_path, "opencv_face_detector_uint8.pb"),
-        os.path.join(model_path, "opencv_face_detector.pbtxt")
+def load_model():
+    return mp_face_mesh.FaceMesh(
+        min_detection_confidence=0.5,
+        min_tracking_confidence=0.5
     )
 
-    age_net = cv2.dnn.readNet(
-        os.path.join(model_path, "age_net.caffemodel"),
-        os.path.join(model_path, "age_deploy.prototxt")
-    )
+face_mesh = load_model()
 
-    gender_net = cv2.dnn.readNet(
-        os.path.join(model_path, "gender_net.caffemodel"),
-        os.path.join(model_path, "gender_deploy.prototxt")
-    )
-
-    return face_net, age_net, gender_net
-
-face_net, age_net, gender_net = load_models()
-
-# === Labels ===
-age_labels = ['(0-2)', '(4-6)', '(8-12)', '(15-20)', '(25-32)', '(38-43)', '(48-53)', '(60-100)']
-gender_labels = ['Male', 'Female']
-
-# === Upload Image ===
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
 def detect(image):
     frame = np.array(image)
-    h, w = frame.shape[:2]
+    results = face_mesh.process(frame)
 
-    blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300),
-                                 [104, 117, 123], swapRB=False)
-    face_net.setInput(blob)
-    detections = face_net.forward()
+    draw = ImageDraw.Draw(image)
 
-    male_count, female_count = 0, 0
-    minor_detected = False
+    if results.multi_face_landmarks:
+        for face_landmarks in results.multi_face_landmarks:
+            landmarks = face_landmarks.landmark
 
-    for i in range(detections.shape[2]):
-        confidence = detections[0, 0, i, 2]
+            left_eye = [landmarks[145], landmarks[159]]
+            right_eye = [landmarks[374], landmarks[386]]
+            mouth = [landmarks[13], landmarks[14]]
 
-        if confidence > 0.7:
-            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-            x1, y1, x2, y2 = box.astype(int)
+            left_eye_ratio = abs(left_eye[0].y - left_eye[1].y)
+            right_eye_ratio = abs(right_eye[0].y - right_eye[1].y)
+            mouth_open_ratio = abs(mouth[0].y - mouth[1].y)
 
-            face = frame[y1:y2, x1:x2]
-            if face.size == 0:
-                continue
+            if left_eye_ratio < 0.018 and right_eye_ratio < 0.018:
+                draw.text((20, 20), "Blinking")
 
-            face = cv2.resize(face, (227, 227))
+            if mouth_open_ratio > 0.05:
+                draw.text((20, 50), "Mouth Open")
 
-            blob_face = cv2.dnn.blobFromImage(
-                face, 1.0, (227, 227),
-                (78.426, 87.768, 114.895), swapRB=True
-            )
+    return image
 
-            # Gender
-            gender_net.setInput(blob_face)
-            gender_preds = gender_net.forward()
-            gender = gender_labels[gender_preds[0].argmax()]
-
-            # Age
-            age_net.setInput(blob_face)
-            age_preds = age_net.forward()
-            age = age_labels[age_preds[0].argmax()]
-
-            # Count
-            if gender == "Male":
-                male_count += 1
-            else:
-                female_count += 1
-
-            if age in ['(0-2)', '(4-6)', '(8-12)']:
-                minor_detected = True
-
-            label = f"{gender}, {age}"
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(frame, label, (x1, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-
-    return frame, male_count, female_count, minor_detected
-
-# === Run Detection ===
 if uploaded_file:
     image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_container_width=True)
+    st.image(image, caption="Original", use_container_width=True)
 
-    result_img, males, females, minor = detect(image)
-
-    st.image(result_img, caption="Processed Image", use_container_width=True)
-    st.write(f"Males: {males}")
-    st.write(f"Females: {females}")
-
-    if minor:
-        st.error("⚠️ Minor Detected")
+    result = detect(image)
+    st.image(result, caption="Processed", use_container_width=True)

@@ -6,11 +6,9 @@ from PIL import Image
 
 st.title("Age & Gender Detection")
 
-# Paths
 BASE_DIR = os.path.dirname(__file__)
 MODEL_DIR = os.path.join(BASE_DIR, "models")
 
-# Load models (cached)
 @st.cache_resource
 def load_models():
     face_net = cv2.dnn.readNet(
@@ -38,13 +36,23 @@ gender_labels = ['Male', 'Female']
 uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
 def detect(image):
+    # ✅ FIX 1: RGB → BGR
     frame = np.array(image)
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
     h, w = frame.shape[:2]
 
     blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300),
                                  [104, 117, 123], swapRB=False)
+
     face_net.setInput(blob)
-    detections = face_net.forward()
+
+    # ✅ FIX 2: Safe forward
+    try:
+        detections = face_net.forward()
+    except Exception as e:
+        st.error(f"Face detection failed: {e}")
+        return frame
 
     for i in range(detections.shape[2]):
         confidence = detections[0, 0, i, 2]
@@ -64,11 +72,9 @@ def detect(image):
                 (78.426, 87.768, 114.895), swapRB=True
             )
 
-            # Gender
             gender_net.setInput(blob_face)
             gender = gender_labels[gender_net.forward()[0].argmax()]
 
-            # Age
             age_net.setInput(blob_face)
             age = age_labels[age_net.forward()[0].argmax()]
 
@@ -80,9 +86,13 @@ def detect(image):
 
     return frame
 
+
 if uploaded_file:
-    image = Image.open(uploaded_file)
+    image = Image.open(uploaded_file).convert("RGB")
     st.image(image, caption="Original", use_container_width=True)
 
     result = detect(image)
+
+    # Convert back for display
+    result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
     st.image(result, caption="Prediction", use_container_width=True)

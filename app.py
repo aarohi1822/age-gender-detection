@@ -86,6 +86,7 @@ def detect(image):
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
     st.image(image, caption="Original", use_container_width=True)
+    st.image(image, caption="Original", width=250)
     
     result = detect(image)
     result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)

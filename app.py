@@ -1,7 +1,6 @@
 import streamlit as st
 from PIL import Image, ImageDraw
 import numpy as np
-import face_recognition
 
 st.title("Face Detection (Working Version)")
 

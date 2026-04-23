@@ -1,4 +1,4 @@
-# 🧠 Age & Gender Detection using Deep Learning (CCTV-Ready)
+# 🧠 Age & Gender Detection using Deep Learning 
 
 This project uses a CNN-based deep learning model to detect a person’s **age range** and **gender** from an image.  
 ✨ Recently enhanced with **CSV logging** and **alerting system** for detecting **minors (age 0–18)** — ideal for **CCTV-based safety & surveillance** applications.
@@ -40,17 +40,23 @@ Timestamp, Predicted_Age, Gender
 
 ---
 
-## 🔮 Future Scope
 
-- 📈 Improve accuracy using models like **ResNet** or **Inception**  
-- ⚡ Real-time performance on edge devices  
-- 🧓 Broader age group classification  
-- 🧠 Add **emotion recognition** support  
-- 🔐 Privacy-aware logging & compliance
+## ⚠️ Model Bias Notice
+
+The pre-trained Caffe models used in this project exhibit performance bias across different skin tones. They tend to perform more accurately on lighter skin tones and less accurately on darker skin tones, including Indian skin tones.
+
+This limitation arises from the lack of diversity in the training dataset used for these models.
+
+### 🚧 Future Improvements
+
+* Retrain models on more diverse and representative datasets
+* Integrate more robust and modern deep learning models
+* Apply bias mitigation techniques to improve fairness and accuracy
 
 ---
 
-##Note:## ##The pre-trained Caffe models used in this project show performance bias across different skin tones, performing more accurately on lighter skin tones and less accurately on darker skin tones including Indian skin tones. This is a known limitation of the training dataset. Future improvements could include retraining on more diverse datasets or integrating more robust models##
+**Note:** This project is intended for educational and demonstration purposes. Predictions may not be reliable across all demographics.
+
 
 
 ## 👩‍💻 Author

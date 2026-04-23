@@ -50,6 +50,9 @@ Timestamp, Predicted_Age, Gender
 
 ---
 
+##Note:## ##The pre-trained Caffe models used in this project show performance bias across different skin tones, performing more accurately on lighter skin tones and less accurately on darker skin tones including Indian skin tones. This is a known limitation of the training dataset. Future improvements could include retraining on more diverse datasets or integrating more robust models##
+
+
 ## 👩‍💻 Author
 
 **Aarohi Gaurav Sharma**  

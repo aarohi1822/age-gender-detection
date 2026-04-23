@@ -85,9 +85,11 @@ def detect(image):
 
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Original", use_container_width=True)
-    st.image(image, caption="Original", width=250)
-    
     result = detect(image)
     result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-    st.image(result, caption="Prediction", use_container_width=True)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.image(image, caption="Original", width=300)
+    with col2:
+        st.image(result, caption="Prediction", width=300)

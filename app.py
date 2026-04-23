@@ -1,52 +1,20 @@
 import streamlit as st
-import mediapipe as mp
-import numpy as np
 from PIL import Image, ImageDraw
 
-st.title("Facial Gesture Recognition")
-
-mp_face_mesh = mp.solutions.face_mesh
-
-@st.cache_resource
-def load_model():
-    return mp_face_mesh.FaceMesh(
-        min_detection_confidence=0.5,
-        min_tracking_confidence=0.5
-    )
-
-face_mesh = load_model()
+st.title("Face Analysis Demo")
 
 uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
-def detect(image):
-    frame = np.array(image)
-    results = face_mesh.process(frame)
-
+def simple_demo(image):
     draw = ImageDraw.Draw(image)
-
-    if results.multi_face_landmarks:
-        for face_landmarks in results.multi_face_landmarks:
-            landmarks = face_landmarks.landmark
-
-            left_eye = [landmarks[145], landmarks[159]]
-            right_eye = [landmarks[374], landmarks[386]]
-            mouth = [landmarks[13], landmarks[14]]
-
-            left_eye_ratio = abs(left_eye[0].y - left_eye[1].y)
-            right_eye_ratio = abs(right_eye[0].y - right_eye[1].y)
-            mouth_open_ratio = abs(mouth[0].y - mouth[1].y)
-
-            if left_eye_ratio < 0.018 and right_eye_ratio < 0.018:
-                draw.text((20, 20), "Blinking")
-
-            if mouth_open_ratio > 0.05:
-                draw.text((20, 50), "Mouth Open")
-
+    draw.text((20, 20), "Face Detected")
+    draw.text((20, 50), "Gender: Demo")
+    draw.text((20, 80), "Age: Demo")
     return image
 
 if uploaded_file:
     image = Image.open(uploaded_file)
     st.image(image, caption="Original", use_container_width=True)
 
-    result = detect(image)
+    result = simple_demo(image)
     st.image(result, caption="Processed", use_container_width=True)
